@@ -13,6 +13,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
+from operator import itemgetter
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -99,7 +100,7 @@ def index():
 @app.route('/venues')
 def venues():
     data=Venue.query.all()
-
+    
     return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
