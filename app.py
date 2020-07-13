@@ -14,6 +14,7 @@ from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
 from operator import itemgetter
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -40,6 +41,14 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    genres = db.Column(db.String())
+    website = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.String(120))
+    shows =  db.relationship('Show', backref='venue', lazy=True)
+
+
+
 
 
     def __repr__(self):
@@ -58,10 +67,24 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    website = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean,default=False)
+    seeking_description = db.Column(db.String(120))
+    shows = db.relationship('Show', backref='artist', lazy=True)
+
+
 
 
     def __repr__(self):
         return f'<artist {self.id} {self.name}>'
+
+class Show(db.Model): #New model for shows, derived table from
+    __tablename__= 'show'
+
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime, nullable=True)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
 
 
     def __repr__(self):
@@ -100,7 +123,7 @@ def index():
 @app.route('/venues')
 def venues():
     data=Venue.query.all()
-    
+
     return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
