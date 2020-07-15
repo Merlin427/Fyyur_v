@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
+import re
 import psycopg2
 import json
 import dateutil.parser
@@ -34,7 +35,7 @@ class Genre(db.Model):
     __tablename__ = 'genre'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String())
 
 venue_genre_table = db.Table('venue_genre_table',
     db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True),
@@ -176,15 +177,73 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+    form = VenueForm(request.form, meta={"csrf": False})
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    name = form.name.data.strip()
+    city = form.city.data.strip()
+    state = form.state.data
+    address = form.address.data.strip()
+    phone = form.phone.data
+    phone = re.sub('\D', '', phone)
+    genres = form.genres.data
+    seeking_talent = True if form.seeking_talent.data== 'Yes' else False
+    seeking_description = form.seeking_description.data.strip()
+    image_link = form.image_link.data.strip()
+    website = form.website.data.strip()
+    facebook_link = form.facebook_link.data.strip()
+
+    if not form.validate():
+        flash(form.errors)
+        return redirect(url_for('create_venue_submission'))
+
+    else:
+        error_in_insert = False
+
+        try:
+            new_venue = Venue(name=name, city=city, state=state, address=address,
+            phone=phone, seeking_talent=seeking_talent, seeking_description=seeking_description,
+            image_link=image_link, website=website, facebook_link=facebook_link)
+
+            for genre in genres:
+                get_genre = Genre.query.filter_by(name=genre).one_or_none()
+                if get_genre:
+                    new_venue.genres.append(get_genre)
+
+                else:
+                    add_genre = Genre(name=genre)
+                    db.session.add(add_genre)
+                    new_venue.genres.append(add_genre)
+
+            db.session.add(new_venue)
+            db.session.commit()
+
+        except Exception as e:
+            error_in_insert = True
+            print(f'Exception "{e}" in create_venue_submission()')
+            db.session.rollback()
+        finally:
+            db.session.close()
+
+        if not error_in_insert:
+            flash('Venue ' + request.form['name'] + ' was successfully listed!')
+            return redirect(url_for('index'))
+            #return render_template('pages/home.html')
+
+        else:
+            flash('Oops, something went wrong. Venue ' + name + ' could not be listed!')
+            print("Error in create_venue_submission()")
+            abort(500)
+
+
+
+
+
+
+
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
