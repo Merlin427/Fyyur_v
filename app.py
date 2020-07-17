@@ -159,11 +159,65 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
 
-
-    stuff=[]
-
     venue=Venue.query.get(venue_id)
-    data=venue
+
+    if not venue:
+        return redirect(url_for ('index'))
+
+    else:
+        genres=[ genre.name for genre in venue.genres] #list of venue Genres
+
+        upcoming_shows=[]
+        upcoming_shows_count=0
+        past_shows=[]
+        past_shows_count=0
+
+        now=datetime.now()
+
+        for show in venue.shows:
+            if show.start_time > now:
+
+                upcoming_shows_count += 1
+                upcoming_shows.append({
+                    "artist_id" : show.artist.id,
+                    "artist_name" : show.artist.name,
+                    "artist_image_link" : show.artist.image_link,
+                    "start_time" : format_datetime(str(show.start_time))
+
+            })
+            if show.start_time < now:
+
+                past_shows_count += 1
+                past_shows.append({
+                    "artist_id" : show.artist.id,
+                    "artist_name" : show.artist.name,
+                    "artist_image_link" : show.artist.image_link,
+                    "start_time" : format_datetime(str(show.start_time))
+
+            })
+        data={
+
+        "id": venue_id,
+        "name": venue.name,
+        "genres": genres,
+        "city": venue.city,
+        "state": venue.state,
+        "phone": (venue.phone[:3] + '-' + venue.phone[3:6] + '-' + venue.phone[6:]),
+        "website": venue.website,
+        "facebook_link": venue.facebook_link,
+        "seeking_venue": venue.seeking_talent,
+        "seeking_description": venue.seeking_description,
+        "image_link": venue.image_link,
+        "past_shows": past_shows,
+        "past_shows_count": past_shows_count,
+        "upcoming_shows": upcoming_shows,
+        "upcoming_shows_count": upcoming_shows_count
+        }
+
+
+
+
+
     #data = list(filter(lambda d: d['id'] == venue_id
     return render_template('pages/show_venue.html', venue=data)
 
@@ -293,7 +347,7 @@ def show_artist(artist_id):
         return redirect(url_for ('index'))
 
     else:
-        genres= [ genre.name for genre in artist.genres]
+        genres= [ genre.name for genre in artist.genres] #make a list of artist genres
 
         upcoming_shows=[]
         upcoming_shows_count=0
