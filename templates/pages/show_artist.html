@@ -73,8 +73,8 @@
 </section>
 <section>
     <a href='/artists/{{ artist.id }}/edit'><button class="btn btn-default btn-sm">Edit Artist</button></a>
-    <button type="submit" onclick="deleteArtist(this)" data-id="{{ artist.id }}" class="btn btn-default btn-sm"
-        style="width: 100px;">Delete Artist</button>
+    <a href='/artists/{{ artist.id }}/delete'><button type="submit" data-id="{{ artist.id }}" class="btn btn-default btn-sm"
+        style="width: 100px;">Delete Artist</button></a>
 </section>
 
 {% endblock %}

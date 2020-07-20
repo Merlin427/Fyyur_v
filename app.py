@@ -62,7 +62,7 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
-    shows =  db.relationship('Show', backref='venue', lazy=True)
+    shows =  db.relationship('Show', backref='venue', lazy=True, passive_deletes=True)
 
 
 
@@ -87,7 +87,7 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean,default=False)
     seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='artist', lazy=True)
+    shows = db.relationship('Show', backref='artist', lazy=True, passive_deletes=True)
 
 
 
@@ -100,8 +100,8 @@ class Show(db.Model): #New model for shows
 
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime, nullable=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id', ondelete='CASCADE'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id', ondelete='CASCADE'), nullable=False)
 
 
     def __repr__(self):
@@ -323,9 +323,9 @@ def create_venue_submission():
 @app.route('/venues/<venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
     error = False
+    venue = Venue.query.get(venue_id)
+    venue_name = venue.name
     try:
-
-        venue = Venue.query.get(venue_id)
         db.session.delete(venue)
         db.session.commit()
     except():
@@ -334,10 +334,33 @@ def delete_venue(venue_id):
     finally:
         db.session.close()
     if error:
+        flash(f'Could not delete venue {venue_name}.')
+        print("Error in delete_venue()")
         abort(500)
     else:
+        flash(f'Successfully deleted venue {venue_name}.')
         return redirect(url_for('venues'))
 
+@app.route('/artists/<artist_id>/delete', methods=['GET'])
+def delete_artist(artist_id):
+    error = False
+    artist = Artist.query.get(artist_id)
+    artist_name = artist.name
+    try:
+        db.session.delete(artist)
+        db.session.commit()
+    except():
+        db.session.rollback()
+        error = True
+    finally:
+        db.session.close()
+    if error:
+        flash(f'Could not delete artist {artist_name}.')
+        print("Error in delete_artist()")
+        abort(500)
+    else:
+        flash(f'Successfully deleted artist {artist_name}.')
+        return redirect(url_for('artists'))
 
 #  Artists
 #  ----------------------------------------------------------------
