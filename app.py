@@ -71,7 +71,7 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<venue {self.id} {self.name}>'
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -249,7 +249,7 @@ def show_venue(venue_id):
 
 
 
-    #data = list(filter(lambda d: d['id'] == venue_id
+
     return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -312,7 +312,7 @@ def create_venue_submission():
         if not insert_error:
             flash('Venue ' + request.form['name'] + ' was successfully listed!')
             return redirect(url_for('index'))
-            #return render_template('pages/home.html')
+
 
         else:
             flash('Oops, something went wrong. Venue ' + name + ' could not be listed!')
@@ -320,24 +320,24 @@ def create_venue_submission():
             abort(500)
 
 
-
-
-
-
-
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-
-
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    error = False
+    try:
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+        venue = Venue.query.get(venue_id)
+        db.session.delete(venue)
+        db.session.commit()
+    except():
+        db.session.rollback()
+        error = True
+    finally:
+        db.session.close()
+    if error:
+        abort(500)
+    else:
+        return redirect(url_for('venues'))
+
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -434,11 +434,6 @@ def show_artist(artist_id):
     return render_template('pages/show_artist.html', artist=data)
 
 
-
-
-  #data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
-
-
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
@@ -467,7 +462,6 @@ def edit_artist(artist_id):
         "image_link": artist.image_link
     }
     return render_template('forms/edit_artist.html', form=form, artist=artist)
-
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -534,6 +528,7 @@ def edit_artist_submission(artist_id):
             abort(500)
     return redirect(url_for('show_artist', artist_id=artist_id))
 
+
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
 
@@ -562,6 +557,7 @@ def edit_venue(venue_id):
         "image_link": venue.image_link
     }
     return render_template('forms/edit_venue.html', form=form, venue=venue)
+
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
@@ -697,8 +693,6 @@ def create_artist_submission():
              flash('Oops, something went wrong. Artist ' + name + ' could not be listed!')
              print("Error in create_artist_submission()")
              abort(500)
-             #return render_template('pages/home.html')
-
 
 #  Shows
 #  ----------------------------------------------------------------
@@ -717,10 +711,7 @@ def shows():
             "artist_image_link": show.artist.image_link,
             "start_time": format_datetime(str(show.start_time))
 
-
-
         })
-
 
     return render_template('pages/shows.html', shows=data)
 
@@ -741,7 +732,6 @@ def create_show_submission():
 
     insert_error=False
 
-
     try:
         new_show = Show(start_time=start_time, artist_id=artist_id, venue_id=venue_id)
         db.session.add(new_show)
@@ -759,16 +749,6 @@ def create_show_submission():
         flash(f' Show has been successfully listed')
 
     return render_template('pages/home.html')
-
-
-
-
-
-  # on successful db insert, flash success
-  #flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
 
 
 @app.errorhandler(404)
