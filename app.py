@@ -123,7 +123,7 @@ def show_venue(venue_id):
         return redirect(url_for ('index'))
 
     else:
-        genres=[ genre.name for genre in venue.genres] #list of venue Genres
+
 
         upcoming_shows=[]
         upcoming_shows_count=0
@@ -157,7 +157,7 @@ def show_venue(venue_id):
 
         "id": venue_id,
         "name": venue.name,
-        "genres": genres,
+        
         "city": venue.city,
         "address": venue.address,
         "state": venue.state,

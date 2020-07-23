@@ -19,6 +19,7 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
     shows =  db.relationship('Show', backref='venue', lazy=True, passive_deletes=True)
+    
 
 
 
