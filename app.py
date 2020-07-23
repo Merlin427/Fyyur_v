@@ -322,7 +322,6 @@ def show_artist(artist_id):
         return redirect(url_for ('index'))
 
     else:
-        genres= [ genre.name for genre in artist.genres] #make a list of artist genres
 
         upcoming_shows=[]
         upcoming_shows_count=0
@@ -352,7 +351,7 @@ def show_artist(artist_id):
         data= {
             "id": artist_id,
             "name": artist.name,
-            "genres": genres,
+            "genres": artist.genres,
             "city": artist.city,
             "state": artist.state,
             "phone": (artist.phone[:3] + '-' + artist.phone[3:6] + '-' + artist.phone[6:]),
@@ -386,13 +385,12 @@ def edit_artist(artist_id):
     else:
         form=ArtistForm(obj=artist)
 
-    genres= [ genre.name for genre in artist.genres ]
 
     venue = {
 
         "id": artist.id,
         "name": artist.name,
-        "genres": genres,
+        "genres": artist.genres,
         "city": artist.city,
         "state": artist.state,
         "phone": (artist.phone[:3] + '-' + artist.phone[3:6] + '-' + artist.phone[6:]),
@@ -431,18 +429,7 @@ def edit_artist_submission(artist_id):
             artist=Artist.query.get(artist_id)
 
 
-            artist.genres = []
-            for genre in genres:
-                get_genre = Genre.query.filter_by(name=genre).one_or_none()
-                if get_genre:
-                    artist.genres.append(get_genre)
-
-                else:
-                    add_genre = Genre(name=genre)
-                    db.session.add(add_genre)
-                    artist.genres.append(add_genre)
-
-
+            artist.genres = genres
             artist.name = name
             artist.city = city
             artist.state = state
@@ -601,19 +588,9 @@ def create_artist_submission():
          insert_error = False
 
          try:
-             new_artist = Artist(name=name, city=city, state=state,
+             new_artist = Artist(name=name, city=city, state=state, genres=request.form.getlist('genres'),
              phone=phone, seeking_venue=seeking_venue, seeking_description=seeking_description,
              image_link=image_link, website=website, facebook_link=facebook_link)
-
-             for genre in genres:
-                 get_genre = Genre.query.filter_by(name=genre).one_or_none()
-                 if get_genre:
-                     new_artist.genres.append(get_genre)
-
-                 else:
-                     add_genre = Genre(name=genre)
-                     db.session.add(add_genre)
-                     new_artist.genres.append(add_genre)
 
              db.session.add(new_artist)
              db.session.commit()
