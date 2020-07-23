@@ -157,7 +157,7 @@ def show_venue(venue_id):
 
         "id": venue_id,
         "name": venue.name,
-        
+        "genres": venue.genres,
         "city": venue.city,
         "address": venue.address,
         "state": venue.state,
@@ -213,19 +213,9 @@ def create_venue_submission():
         insert_error = False
 
         try:
-            new_venue = Venue(name=name, city=city, state=state, address=address,
+            new_venue = Venue(name=name, city=city, state=state, address=address, genres=request.form.getlist('genres'),
             phone=phone, seeking_talent=seeking_talent, seeking_description=seeking_description,
             image_link=image_link, website=website, facebook_link=facebook_link)
-
-            for genre in genres:
-                get_genre = Genre.query.filter_by(name=genre).one_or_none()
-                if get_genre:
-                    new_venue.genres.append(get_genre)
-
-                else:
-                    add_genre = Genre(name=genre)
-                    db.session.add(add_genre)
-                    new_venue.genres.append(add_genre)
 
             db.session.add(new_venue)
             db.session.commit()
