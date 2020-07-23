@@ -467,13 +467,12 @@ def edit_venue(venue_id):
     else:
         form=VenueForm(obj=venue)
 
-    genres= [ genre.name for genre in venue.genres ]
 
     venue = {
 
         "id": venue.id,
         "name": venue.name,
-        "genres": genres,
+        "genres": venue.genres,
         "address": venue.address,
         "city": venue.city,
         "state": venue.state,
@@ -513,19 +512,7 @@ def edit_venue_submission(venue_id):
         try:
             venue=Venue.query.get(venue_id)
 
-
-            venue.genres = []
-            for genre in genres:
-                get_genre = Genre.query.filter_by(name=genre).one_or_none()
-                if get_genre:
-                    venue.genres.append(get_genre)
-
-                else:
-                    add_genre = Genre(name=genre)
-                    db.session.add(add_genre)
-                    venue.genres.append(add_genre)
-
-
+            venue.genres = genres
             venue.name = name
             venue.city = city
             venue.state = state
